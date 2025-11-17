@@ -1,0 +1,117 @@
+name: Deploy RadReport to Hostinger via FTP
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🔄 Clonar o repositório
+        uses: actions/checkout@v4
+
+      - name: 🔧 Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 📦 Instalar dependências
+        run: npm ci
+
+      - name: 🏷️ Obter informações do Git
+        run: |
+          echo "GIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+          echo "BUILD_TIMESTAMP=$(date -u +'%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_ENV
+          echo "APP_VERSION=$(node -p "require('./package.json').version || '1.0.0'")" >> $GITHUB_ENV
+
+      - name: 🔨 Build do projeto para produção
+        run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+          VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_APP_URL: https://radreport.com.br
+          NODE_ENV: production
+          BUILD_VERSION: ${{ env.APP_VERSION }}-${{ env.GIT_HASH }}
+          BUILD_TIME: ${{ env.BUILD_TIMESTAMP }}
+
+      - name: 📊 Mostrar informações do build
+        run: |
+          echo "🚀 Build Info:"
+          echo "Version: ${{ env.APP_VERSION }}"
+          echo "Git Hash: ${{ env.GIT_HASH }}"
+          echo "Build Time: ${{ env.BUILD_TIMESTAMP }}"
+          echo "Build Size:"
+          du -sh dist/ || echo "Pasta dist não encontrada"
+          echo "Arquivos no dist:"
+          ls -la dist/ || echo "Pasta dist não encontrada"
+
+      - name: 📝 Criar arquivo de versão
+        run: |
+          echo "{"
+          echo "  \"version\": \"${{ env.APP_VERSION }}\","
+          echo "  \"gitHash\": \"${{ env.GIT_HASH }}\","
+          echo "  \"buildTime\": \"${{ env.BUILD_TIMESTAMP }}\","
+          echo "  \"deployTime\": \"$(date -u +'%Y-%m-%d %H:%M:%S UTC')\""
+          echo "}" > dist/version.json
+
+      - name: 🚀 Deploy FTP para Hostinger
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          port: 21
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          local-dir: dist/
+          server-dir: /public_html/
+          dangerous-clean-slate: false  # Não apaga arquivos existentes, só sobrescreve
+          dry-run: false
+          log-level: verbose
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.env*
+            **/README.md
+            **/.gitignore
+
+      - name: ✅ Verificar deploy
+        run: |
+          echo "✅ Deploy concluído com sucesso!"
+          echo "📋 Resumo:"
+          echo "- Projeto: RadReport"
+          echo "- Versão: ${{ env.APP_VERSION }}"
+          echo "- Git Hash: ${{ env.GIT_HASH }}"
+          echo "- Build Time: ${{ env.BUILD_TIMESTAMP }}"
+          echo "- Deploy Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')"
+          echo "- URL: https://radreport.com.br"
+
+      - name: 🏷️ Criar tag de release
+        if: success()
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          TAG_NAME="v${{ env.APP_VERSION }}-$(date +%Y%m%d-%H%M%S)"
+          git tag -a "$TAG_NAME" -m "Deploy production v${{ env.APP_VERSION }} to Hostinger"
+          git push origin "$TAG_NAME" || echo "⚠️ Tag já existe ou erro no push"
+
+      - name: 🔔 Notificar sucesso
+        if: success()
+        run: |
+          echo "🎉 Deploy realizado com sucesso!"
+          echo "🔗 Acesse: https://radreport.com.br"
+          echo "📊 Versão: ${{ env.APP_VERSION }} (${{ env.GIT_HASH }})"
+
+      - name: 🚨 Notificar falha
+        if: failure()
+        run: |
+          echo "❌ Falha no deploy!"
+          echo "Verifique os logs acima para mais detalhes."

@@ -1,0 +1,98 @@
+name: Auto Upload Trae to GitHub
+
+on:
+  push:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20.x'
+
+jobs:
+  upload-and-notify:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run type check
+      run: npm run check
+
+    - name: Build project
+      run: npm run build
+      env:
+        VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+        VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+        VITE_TURNSTILE_SITE_KEY: ${{ secrets.VITE_TURNSTILE_SITE_KEY }}
+        VITE_GOOGLE_CLIENT_ID: ${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+        VITE_APP_URL: https://radreport.com.br
+        NODE_ENV: production
+
+    - name: Build API
+      run: |
+        cd api
+        npm ci
+        npm run build
+
+    - name: Create deployment info
+      run: |
+        echo "📊 INFORMAÇÕES DO DEPLOYMENT" >> deployment_info.txt
+        echo "================================" >> deployment_info.txt
+        echo "Data: $(date '+%Y-%m-%d %H:%M:%S')" >> deployment_info.txt
+        echo "Commit: ${{ github.sha }}" >> deployment_info.txt
+        echo "Autor: ${{ github.actor }}" >> deployment_info.txt
+        echo "Branch: ${{ github.ref_name }}" >> deployment_info.txt
+        echo "" >> deployment_info.txt
+        echo "📁 Arquivos modificados:" >> deployment_info.txt
+        git diff --name-only HEAD~1 HEAD >> deployment_info.txt || echo "Primeiro commit" >> deployment_info.txt
+        echo "" >> deployment_info.txt
+        echo "📝 Última mensagem de commit:" >> deployment_info.txt
+        git log -1 --pretty=format:"%s" >> deployment_info.txt
+        echo "" >> deployment_info.txt
+        echo "🚀 Status do upload:" >> deployment_info.txt
+        echo "✅ Código enviado com sucesso para o GitHub!" >> deployment_info.txt
+        echo "📍 Pronto para deploy manual no Hostinger quando desejar." >> deployment_info.txt
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-files-${{ github.sha }}
+        path: |
+          dist/
+          api/dist/
+          deployment_info.txt
+        retention-days: 30
+
+    - name: Comment PR with deployment info
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const fs = require('fs');
+          const deploymentInfo = fs.readFileSync('deployment_info.txt', 'utf8');
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: `## 🔄 Upload Automático Trae → GitHub\n\n${deploymentInfo}\n\n### 📋 Próximos passos:\n- Use \`npm run deploy:hostinger:manual\` para deploy manual no Hostinger\n- Consulte \`DEPLOY_MANUAL_GUIDE.md\` para instruções detalhadas`
+          });
+
+    - name: Summary notification
+      run: |
+        echo "✅ Upload automático concluído!"
+        echo "📁 Código disponível em: https://github.com/${{ github.repository }}"
+        echo "🚀 Use 'npm run deploy:hostinger:manual' para deploy no Hostinger"
+        echo "📖 Consulte DEPLOY_MANUAL_GUIDE.md para instruções"

@@ -6,12 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:hostinger": "node scripts/build-hostinger.js",
     "preview": "vite preview",
     "check": "tsc --noEmit",
     "deploy:setup": "./deploy-setup.sh",
     "deploy:secrets": "./setup-github-secrets.sh",
     "deploy:prod": "npm run build && vercel --prod",
-    "deploy:staging": "npm run build && vercel"
+    "deploy:staging": "npm run build && vercel",
+    "deploy:ftp": "npm run build:hostinger",
+    "deploy:hostinger:manual": "node scripts/deploy-manual.js"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.3.1",
