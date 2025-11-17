@@ -1,0 +1,103 @@
+openapi: 3.0.3
+info:
+  title: RadReport API
+  version: 1.0.0
+servers:
+  - url: http://localhost:8787
+paths:
+  /v1/ai/suggest:
+    post:
+      summary: IA - Sugestões de texto/conclusão
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text: { type: string }
+                modality: { type: string }
+                organ: { type: string }
+                topK: { type: integer, maximum: 8 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      suggestions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            type: { type: string }
+                            text: { type: string }
+                            rationale: { type: string }
+                      conclusion:
+                        type: object
+                        properties:
+                          text: { type: string }
+  /v1/ai/complete:
+    post:
+      summary: IA - Autocomplete curto
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                textPrefix: { type: string }
+                modality: { type: string }
+      responses:
+        '200': { description: OK }
+  /v1/ai/differentials:
+    post:
+      summary: IA - Diferenciais diagnósticos
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                findings:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      term: { type: string }
+                      qualifiers: { type: array, items: { type: string } }
+                modality: { type: string }
+      responses:
+        '200': { description: OK }
+  /v1/ai/rag/search:
+    get:
+      summary: RAG - Busca semântica
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: mod
+          schema: { type: string }
+        - in: query
+          name: k
+          schema: { type: integer }
+      responses:
+        '200': { description: OK }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

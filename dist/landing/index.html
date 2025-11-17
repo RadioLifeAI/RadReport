@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Laudos radiológicos estruturados com inteligência artificial. Rápido, claro e seguro." />
+    <title>RadReport • Laudos estruturados com IA</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="/design/tokens.css" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+    <header class="header" role="banner">
+      <div class="container header__row">
+        <a class="logo" href="#" aria-label="RadReport">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#0ea5e9" opacity=".2"/><path d="M7 12h10M12 7v10" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/></svg>
+          <span class="brand">RadReport</span>
+        </a>
+        <nav class="nav" role="navigation" aria-label="principal">
+          <button class="nav__toggle" aria-expanded="false" aria-controls="menu">☰</button>
+          <ul id="menu" class="menu">
+            <li class="menu__item menu__dropdown">
+              <button class="dropdown__btn" aria-expanded="false" aria-controls="drop1">Visão geral ▾</button>
+              <ul id="drop1" class="dropdown" role="menu">
+                <li><a href="#recursos">Recursos</a></li>
+                <li><a href="#depoimentos">Depoimentos</a></li>
+                <li><a href="#contato">Contato</a></li>
+              </ul>
+            </li>
+            <li class="menu__item"><a href="#tutorials">Tutoriais</a></li>
+            <li class="menu__item"><a href="#chat">Chat IA</a></li>
+            <li class="menu__item"><a href="#contato">Contato</a></li>
+          </ul>
+        </nav>
+        <div class="header__actions">
+          <button class="theme" aria-label="Alternar tema">◐</button>
+          <a class="btn btn--outline" href="#">Entrar</a>
+        </div>
+      </div>
+    </header>
+
+    <main id="conteudo">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero__bg" aria-hidden="true"></div>
+        <div class="container hero__content">
+          <h1 id="hero-title">Laudos estruturados<br>com inteligência artificial.</h1>
+          <p class="lead">RadReport entrega tudo o que você precisa para elaborar laudos radiológicos com eficiência, clareza e padronização — sem armazenar dados de pacientes.</p>
+          <div class="hero__cta">
+            <a class="btn btn--primary" href="#recursos">Experimente gratuitamente ✨</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="recursos" class="features section" aria-labelledby="features-title">
+        <div class="container">
+          <h2 id="features-title">Nossos serviços</h2>
+          <div class="grid grid--features">
+            <article class="card">
+              <div class="icon" aria-hidden="true">🧩</div>
+              <h3>Agentes IA para workflows</h3>
+              <p>Agentes personalizados para otimizar processos e elevar a precisão dos laudos.</p>
+              <a class="link" href="#">Saiba mais →</a>
+            </article>
+            <article class="card">
+              <div class="icon" aria-hidden="true">📊</div>
+              <h3>Planos corporativos</h3>
+              <p>Pacotes sob demanda para grandes equipes com escalabilidade e eficiência.</p>
+              <a class="link" href="#">Saiba mais →</a>
+            </article>
+            <article class="card">
+              <div class="icon" aria-hidden="true">🧠</div>
+              <h3>API de análise</h3>
+              <p>Integração para BI com indicadores e insights a partir de laudos desidentificados.</p>
+              <a class="link" href="#">Saiba mais →</a>
+            </article>
+            <article class="card card--accent">
+              <div class="icon" aria-hidden="true">🎙️</div>
+              <h3>Reconhecimento de voz</h3>
+              <p>Transcrição em tempo real e comandos rápidos para criar laudos com agilidade.</p>
+              <a class="link" href="#">Saiba mais →</a>
+            </article>
+            <article class="card">
+              <div class="icon" aria-hidden="true">🧪</div>
+              <h3>Templates estruturados</h3>
+              <p>Modelos por modalidade, macros e consistência terminológica assistida.</p>
+              <a class="link" href="#">Saiba mais →</a>
+            </article>
+            <article class="card">
+              <div class="icon" aria-hidden="true">🔒</div>
+              <h3>Segurança e privacidade</h3>
+              <p>Fluxo sem PII, criptografia e melhores práticas de conformidade.</p>
+              <a class="link" href="#">Saiba mais →</a>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="depoimentos" class="testimonials section" aria-labelledby="testimonials-title">
+        <div class="container">
+          <h2 id="testimonials-title">O que dizem nossos usuários</h2>
+          <div class="carousel" aria-roledescription="carousel" aria-label="Depoimentos" aria-live="polite">
+            <button class="carousel__control prev" aria-label="Anterior">‹</button>
+            <ul class="carousel__track">
+              <li class="tcard">
+                <blockquote>
+                  “Reduziu em mais de 40% o tempo de emissão de laudos.”
+                  <cite>— Radiologista sênior, TC/RM</cite>
+                </blockquote>
+              </li>
+              <li class="tcard">
+                <blockquote>
+                  “Os comandos de voz e macros padronizadas são excelentes.”
+                  <cite>— Coordenador de serviço de US</cite>
+                </blockquote>
+              </li>
+              <li class="tcard">
+                <blockquote>
+                  “Interface limpa, objetiva e pronta para copiar e colar.”
+                  <cite>— Especialista em tórax, RX/TC</cite>
+                </blockquote>
+              </li>
+            </ul>
+            <button class="carousel__control next" aria-label="Próximo">›</button>
+          </div>
+        </div>
+      </section>
+
+      <section id="faq" class="section">
+        <div class="container">
+          <h2>Dúvidas frequentes</h2>
+          <details>
+            <summary>Como funciona o período de testes?</summary>
+            <p>Você pode testar gratuitamente com recursos essenciais sem necessidade de cadastro de paciente.</p>
+          </details>
+          <details>
+            <summary>Vocês armazenam dados de pacientes?</summary>
+            <p>Não. A plataforma opera apenas com texto desidentificado e pronto para copiar.</p>
+          </details>
+          <details>
+            <summary>É possível integrar com sistemas externos?</summary>
+            <p>Sim, por meio de APIs e webhooks; integrações clínicas seguem padrões do setor.</p>
+          </details>
+        </div>
+      </section>
+    </main>
+
+    <footer id="contato" class="footer" role="contentinfo">
+      <div class="container footer__row">
+        <div class="footer__brand">
+          <div class="logo small">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#0ea5e9" opacity=".2"/><path d="M7 12h10M12 7v10" stroke="#06b6d4" stroke-width="2" stroke-linecap="round"/></svg>
+            <span>RadReport</span>
+          </div>
+          <p>© <span id="year"></span> RadReport. Todos os direitos reservados.</p>
+        </div>
+        <nav aria-label="links úteis">
+          <ul class="footer__links">
+            <li><a href="#recursos">Recursos</a></li>
+            <li><a href="#depoimentos">Depoimentos</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#">Política de Privacidade</a></li>
+          </ul>
+        </nav>
+        <address class="footer__contact">
+          <a href="mailto:contato@radreport.ai">contato@radreport.ai</a>
+          <div class="social">
+            <a aria-label="LinkedIn" href="#">in</a>
+            <a aria-label="Instagram" href="#">ig</a>
+          </div>
+        </address>
+      </div>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+  </body>
+  </html>

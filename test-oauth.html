@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste OAuth - Diagnóstico</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+    <div style="max-width: 800px; margin: 20px auto; font-family: Arial, sans-serif;">
+        <h1>Teste de Diagnóstico - Google OAuth</h1>
+        
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Configuração Atual</h2>
+            <div id="config-info"></div>
+        </div>
+        
+        <div style="background: #e8f5e8; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Teste de Conexão</h2>
+            <button onclick="testConnection()" style="padding: 10px 20px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">Testar Conexão Supabase</button>
+            <div id="connection-result"></div>
+        </div>
+        
+        <div style="background: #e8f0ff; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Teste OAuth Google</h2>
+            <button onclick="testGoogleOAuth()" style="padding: 10px 20px; background: #4285F4; color: white; border: none; border-radius: 4px; cursor: pointer;">Testar Login Google</button>
+            <div id="oauth-result"></div>
+        </div>
+        
+        <div style="background: #fff3cd; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Análise de Callback</h2>
+            <div id="callback-analysis"></div>
+        </div>
+        
+        <div style="background: #f8d7da; padding: 20px; border-radius: 8px; margin: 20px 0;">
+            <h2>Console de Logs</h2>
+            <div id="console-logs" style="font-family: monospace; font-size: 12px; background: #000; color: #0f0; padding: 10px; border-radius: 4px; max-height: 300px; overflow-y: auto;"></div>
+            <button onclick="clearLogs()" style="margin-top: 10px; padding: 5px 10px; background: #dc3545; color: white; border: none; border-radius: 4px; cursor: pointer;">Limpar Logs</button>
+        </div>
+    </div>
+
+    <script>
+        // Configurações do projeto
+        const SUPABASE_URL = 'https://gxhbdbovixbptrjrcwbr.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd4aGJkYm92aXhicHRyanJjd2JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMxMzY3MzgsImV4cCI6MjA3ODcxMjczOH0.S4-5DqCkTdT4_j7ZGfwulMHwgIXG_9g1CtahY6qi50Q';
+        
+        let supabase;
+        
+        // Função para adicionar logs
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logDiv = document.getElementById('console-logs');
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#0f0';
+            logDiv.innerHTML += `<div style="color: ${color}">[${timestamp}] ${message}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(`[${timestamp}] ${message}`);
+        }
+        
+        function clearLogs() {
+            document.getElementById('console-logs').innerHTML = '';
+        }
+        
+        // Inicializar e mostrar configuração
+        function initializeConfig() {
+            const currentOrigin = window.location.origin;
+            const redirectUrl = `${currentOrigin}/auth/callback`;
+            
+            document.getElementById('config-info').innerHTML = `
+                <p><strong>Supabase URL:</strong> ${SUPABASE_URL}</p>
+                <p><strong>Origem Atual:</strong> ${currentOrigin}</p>
+                <p><strong>URL de Redirect:</strong> ${redirectUrl}</p>
+                <p><strong>Hostname:</strong> ${window.location.hostname}</p>
+                <p><strong>Porta:</strong> ${window.location.port}</p>
+                <p><strong>Protocolo:</strong> ${window.location.protocol}</p>
+            `;
+            
+            addLog('Configuração inicializada');
+            addLog(`Origem: ${currentOrigin}`);
+            addLog(`Redirect URL: ${redirectUrl}`);
+        }
+        
+        // Testar conexão com Supabase
+        async function testConnection() {
+            try {
+                addLog('Testando conexão com Supabase...');
+                
+                supabase = supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                const { data, error } = await supabase.auth.getSession();
+                
+                if (error) {
+                    throw error;
+                }
+                
+                document.getElementById('connection-result').innerHTML = `
+                    <div style="color: green; margin-top: 10px;">
+                        <strong>✓ Conexão bem-sucedida!</strong><br>
+                        Sessão atual: ${data.session ? 'Ativa' : 'Nenhuma sessão'}<br>
+                        Usuário: ${data.session?.user?.email || 'Nenhum'}
+                    </div>
+                `;
+                
+                addLog('Conexão com Supabase estabelecida com sucesso', 'success');
+                
+            } catch (error) {
+                document.getElementById('connection-result').innerHTML = `
+                    <div style="color: red; margin-top: 10px;">
+                        <strong>✗ Erro de conexão:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+                
+                addLog(`Erro de conexão: ${error.message}`, 'error');
+            }
+        }
+        
+        // Testar OAuth do Google
+        async function testGoogleOAuth() {
+            try {
+                addLog('Iniciando teste de OAuth Google...');
+                
+                supabase = supabase || window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+                
+                const currentOrigin = window.location.origin;
+                const redirectUrl = `${currentOrigin}/auth/callback`;
+                
+                addLog(`Usando redirect URL: ${redirectUrl}`);
+                
+                const { data, error } = await supabase.auth.signInWithOAuth({
+                    provider: 'google',
+                    options: {
+                        redirectTo: redirectUrl,
+                        queryParams: {
+                            access_type: 'offline',
+                            prompt: 'consent',
+                        }
+                    }
+                });
+                
+                if (error) {
+                    throw error;
+                }
+                
+                document.getElementById('oauth-result').innerHTML = `
+                    <div style="color: green; margin-top: 10px;">
+                        <strong>✓ OAuth iniciado com sucesso!</strong><br>
+                        URL de redirecionamento: <a href="${data.url}" target="_blank">${data.url}</a><br>
+                        <button onclick="window.open('${data.url}', '_blank')" style="margin-top: 10px; padding: 5px 10px; background: #4285F4; color: white; border: none; border-radius: 4px; cursor: pointer;">Abrir URL</button>
+                    </div>
+                `;
+                
+                addLog(`OAuth URL gerada: ${data.url}`, 'success');
+                
+                // Armazenar URL para análise
+                window.lastOAuthUrl = data.url;
+                analyzeCallbackUrl(data.url);
+                
+            } catch (error) {
+                document.getElementById('oauth-result').innerHTML = `
+                    <div style="color: red; margin-top: 10px;">
+                        <strong>✗ Erro no OAuth:</strong><br>
+                        ${error.message}
+                    </div>
+                `;
+                
+                addLog(`Erro no OAuth: ${error.message}`, 'error');
+            }
+        }
+        
+        // Analisar URL de callback
+        function analyzeCallbackUrl(oauthUrl) {
+            try {
+                addLog('Analisando URL de callback...');
+                
+                // Extrair parâmetros da URL OAuth
+                const url = new URL(oauthUrl);
+                const params = new URLSearchParams(url.search);
+                
+                const redirectUri = params.get('redirect_uri');
+                const state = params.get('state');
+                const scope = params.get('scope');
+                
+                document.getElementById('callback-analysis').innerHTML = `
+                    <div style="margin-top: 10px;">
+                        <p><strong>Redirect URI detectado:</strong> ${redirectUri || 'Nenhum'}</p>
+                        <p><strong>State:</strong> ${state ? state.substring(0, 20) + '...' : 'Nenhum'}</p>
+                        <p><strong>Scope:</strong> ${scope || 'Nenhum'}</p>
+                        <p><strong>URL completa:</strong> <code style="font-size: 10px;">${oauthUrl}</code></p>
+                    </div>
+                `;
+                
+                addLog(`Redirect URI detectado: ${redirectUri}`);
+                
+                // Verificar se a redirect URI corresponde ao esperado
+                const expectedRedirect = `${window.location.origin}/auth/callback`;
+                if (redirectUri === expectedRedirect) {
+                    addLog('✓ Redirect URI está correta!', 'success');
+                } else {
+                    addLog(`✗ Redirect URI incorreta! Esperada: ${expectedRedirect}`, 'error');
+                }
+                
+            } catch (error) {
+                addLog(`Erro ao analisar callback: ${error.message}`, 'error');
+            }
+        }
+        
+        // Analisar URL atual para callback
+        function analyzeCurrentUrl() {
+            const url = new URL(window.location.href);
+            const params = new URLSearchParams(url.search);
+            
+            if (params.has('code') || params.has('error')) {
+                addLog('URL de callback detectada!', 'success');
+                addLog(`Código: ${params.get('code') ? 'Presente' : 'Ausente'}`);
+                addLog(`Erro: ${params.get('error') || 'Nenhum'}`);
+                addLog(`State: ${params.get('state') || 'Nenhum'}`);
+            }
+        }
+        
+        // Inicializar quando a página carregar
+        window.onload = function() {
+            initializeConfig();
+            analyzeCurrentUrl();
+            addLog('Página de diagnóstico carregada');
+        };
+    </script>
+</body>
+</html>
